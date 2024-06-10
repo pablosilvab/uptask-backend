@@ -48,4 +48,19 @@ export class TaskController {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
   };
+
+  static deleteTaskById = async (req: Request, res: Response) => {
+    const { taskId } = req.params;
+    try {
+      const task = await Task.findById(taskId);
+      req.project.tasks = req.project.tasks.filter(
+        (task) => task._id.toString() !== taskId
+      );
+
+      await Promise.allSettled([task.deleteOne(), req.project.save()]);
+      res.json({ message: "Tarea eliminada correctamente" });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
 }

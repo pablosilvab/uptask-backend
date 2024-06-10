@@ -22,13 +22,16 @@ router.post(
   handleInputErrors,
   ProjectController.createProject
 );
+
 router.get("/", ProjectController.getAllProjects);
+
 router.get(
   "/:id",
   param("id").isMongoId().withMessage("ID no válido"),
   handleInputErrors,
   ProjectController.getProjectById
 );
+
 router.put(
   "/:id",
   param("id").isMongoId().withMessage("ID no válido"),
@@ -44,6 +47,7 @@ router.put(
   handleInputErrors,
   ProjectController.updateProject
 );
+
 router.delete(
   "/:id",
   param("id").isMongoId().withMessage("ID no válido"),
@@ -76,7 +80,6 @@ router.get(
   TaskController.getTaskById
 );
 
-
 router.put(
   "/:projectId/tasks/:taskId",
   param("taskId").isMongoId().withMessage("ID no válido"),
@@ -89,7 +92,13 @@ router.put(
   TaskController.updateTask
 );
 
-
+router.delete(
+  "/:projectId/tasks/:taskId",
+  param("taskId").isMongoId().withMessage("ID no válido"),
+  validateTaskExists,
+  handleInputErrors,
+  TaskController.deleteTaskById
+);
 
 
 export default router;
