@@ -5,6 +5,7 @@ import projectRoutes from "./routes/projectRoutes";
 import { corsConfig } from "./config/cors";
 import cors from "cors";
 import morgan from "morgan";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 connectDB();
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors(corsConfig));
 app.use(morgan("dev"));
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 
 export default app;
