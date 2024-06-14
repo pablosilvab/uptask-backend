@@ -19,6 +19,7 @@ export class AuthEmail {
     const replacements = {
       name: user.name,
       token: user.token,
+      confirmation_link: process.env.FRONTEND_URL+"/auth/confirm-account"
     };
     const htmlToSend = template(replacements);
 
