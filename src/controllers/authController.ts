@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/user";
-import { hashPassword } from "../utils/auth";
+import { checkPassword, hashPassword } from "../utils/auth";
 import { generateToken } from "../utils/token";
 import Token from "../models/token";
 import { AuthEmail } from "../emails/authEmail";
@@ -48,11 +48,52 @@ export class AuthController {
         res.status(401).json({ message: error.message });
       }
 
-      const user = await User.findById(tokenExists.user)
-      user.confirmed = true
+      const user = await User.findById(tokenExists.user);
+      user.confirmed = true;
 
-      Promise.allSettled([user.save(), tokenExists.deleteOne()])
-      res.json({message: 'Tu cuenta ha sido confirmada exitosamente'})
+      Promise.allSettled([user.save(), tokenExists.deleteOne()]);
+      res.json({ message: "Tu cuenta ha sido confirmada exitosamente" });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
+
+  static login = async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) {
+        const error = new Error("Email no registrado.");
+        return res.status(404).json({ message: error.message });
+      }
+
+      if (!user.confirmed) {
+        const token = new Token();
+        token.user = user.id;
+        token.token = generateToken();
+        await token.save();
+
+        AuthEmail.sendConfirmationEmail({
+          email: user.email,
+          name: user.name,
+          token: token.token,
+        });
+
+        const error = new Error(
+          "La cuenta no ha sido confirmada. Hemos enviado un email de confirmación."
+        );
+        return res.status(401).json({ message: error.message });
+      }
+
+      console.log(user);
+
+      const isPasswordCorrect = await checkPassword(password, user.password);
+      if (!isPasswordCorrect) {
+        const error = new Error("Credenciales inválidas");
+        return res.status(401).json({ message: error.message });
+      }
+
+      return res.json({ message: "Usuario autenticado" });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
