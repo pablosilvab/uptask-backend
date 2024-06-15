@@ -45,7 +45,7 @@ export class AuthController {
       const tokenExists = await Token.findOne({ token });
       if (!tokenExists) {
         const error = new Error("Token no válido");
-        res.status(401).json({ error: error.message });
+        return res.status(401).json({ error: error.message });
       }
 
       const user = await User.findById(tokenExists.user);
@@ -156,6 +156,45 @@ export class AuthController {
 
       res.status(200).json({
         message: "Revisa tu email y sigue las instrucciones.",
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
+
+  static validateToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+      const tokenExists = await Token.findOne({ token });
+      if (!tokenExists) {
+        const error = new Error("Token no válido");
+        return res.status(401).json({ error: error.message });
+      }
+
+      res.json({
+        message: "Código validado exitosamente. Define tu nueva contraseña.",
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
+
+  static updatePasswordWithToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const tokenExists = await Token.findOne({ token });
+
+      if (!tokenExists) {
+        const error = new Error("Token no válido");
+        return res.status(404).json({ error: error.message });
+      }
+
+      const user = await User.findById(tokenExists.user);
+      user.password = await hashPassword(req.body.password);
+
+      await Promise.allSettled([user.save(), tokenExists.deleteOne()]);
+      res.json({
+        message: "Contraseña actualizada exitosamente.",
       });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
