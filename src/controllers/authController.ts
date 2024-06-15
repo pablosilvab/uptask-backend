@@ -13,7 +13,7 @@ export class AuthController {
       const userExists = await User.findOne({ email });
       if (userExists) {
         const error = new Error("El usuario ya está registrado");
-        return res.status(409).json({ message: error.message });
+        return res.status(409).json({ error: error.message });
       }
 
       const user = new User(req.body);
@@ -45,7 +45,7 @@ export class AuthController {
       const tokenExists = await Token.findOne({ token });
       if (!tokenExists) {
         const error = new Error("Token no válido");
-        res.status(401).json({ message: error.message });
+        res.status(401).json({ error: error.message });
       }
 
       const user = await User.findById(tokenExists.user);
@@ -64,7 +64,7 @@ export class AuthController {
       const user = await User.findOne({ email });
       if (!user) {
         const error = new Error("Email no registrado.");
-        return res.status(404).json({ message: error.message });
+        return res.status(404).json({ error: error.message });
       }
 
       if (!user.confirmed) {
@@ -82,7 +82,7 @@ export class AuthController {
         const error = new Error(
           "La cuenta no ha sido confirmada. Hemos enviado un email de confirmación."
         );
-        return res.status(401).json({ message: error.message });
+        return res.status(401).json({ error: error.message });
       }
 
       console.log(user);
@@ -90,10 +90,44 @@ export class AuthController {
       const isPasswordCorrect = await checkPassword(password, user.password);
       if (!isPasswordCorrect) {
         const error = new Error("Credenciales inválidas");
-        return res.status(401).json({ message: error.message });
+        return res.status(401).json({ error: error.message });
       }
 
       return res.json({ message: "Usuario autenticado" });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
+
+  static requestConfirmationCode = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        const error = new Error("El usuario no está registrado");
+        return res.status(404).json({ error: error.message});
+      }
+
+      if (user.confirmed) {
+        const error = new Error("El usuario ya está confirmado");
+        return res.status(403).json({ error: error.message });
+      }
+
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+
+      AuthEmail.sendConfirmationEmail({
+        email: user.email,
+        name: user.name,
+        token: token.token,
+      });
+
+      await Promise.allSettled([user.save(), token.save()]);
+      res.status(200).json({
+        message: "Se ha enviado un nuevo código a tu email.",
+      });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
