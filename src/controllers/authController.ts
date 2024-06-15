@@ -106,7 +106,7 @@ export class AuthController {
       const user = await User.findOne({ email });
       if (!user) {
         const error = new Error("El usuario no está registrado");
-        return res.status(404).json({ error: error.message});
+        return res.status(404).json({ error: error.message });
       }
 
       if (user.confirmed) {
@@ -127,6 +127,35 @@ export class AuthController {
       await Promise.allSettled([user.save(), token.save()]);
       res.status(200).json({
         message: "Se ha enviado un nuevo código a tu email.",
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error interno. Intente más tarde" });
+    }
+  };
+
+  static forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        const error = new Error("El usuario no está registrado");
+        return res.status(404).json({ error: error.message });
+      }
+
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+      await token.save();
+
+      AuthEmail.sendPasswordResetToken({
+        email: user.email,
+        name: user.name,
+        token: token.token,
+      });
+
+      res.status(200).json({
+        message: "Revisa tu email y sigue las instrucciones.",
       });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
