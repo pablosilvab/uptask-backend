@@ -5,11 +5,13 @@ import { handleInputErrors } from "../middleware/validation";
 import { TaskController } from "../controllers/taskController";
 import { validateProjectExists } from "../middleware/project";
 import { validateTaskExists } from "../middleware/task";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
 router.post(
   "/",
+  authenticate,
   body("projectName")
     .notEmpty()
     .withMessage("El nombre del proyecto es obligatorio"),
@@ -103,11 +105,10 @@ router.delete(
 router.patch(
   "/:projectId/tasks/:taskId/status",
   param("taskId").isMongoId().withMessage("ID no válido"),
-  body('status').notEmpty().withMessage('El estado es obligatorio'),
+  body("status").notEmpty().withMessage("El estado es obligatorio"),
   validateTaskExists,
   handleInputErrors,
   TaskController.updateStatus
 );
-
 
 export default router;

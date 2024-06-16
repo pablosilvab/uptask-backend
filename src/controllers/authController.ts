@@ -4,6 +4,7 @@ import { checkPassword, hashPassword } from "../utils/auth";
 import { generateToken } from "../utils/token";
 import Token from "../models/token";
 import { AuthEmail } from "../emails/authEmail";
+import { generateJWT } from "../utils/jwt";
 
 export class AuthController {
   static createAccount = async (req: Request, res: Response) => {
@@ -62,6 +63,7 @@ export class AuthController {
     try {
       const { email, password } = req.body;
       const user = await User.findOne({ email });
+      
       if (!user) {
         const error = new Error("Email no registrado.");
         return res.status(404).json({ error: error.message });
@@ -85,15 +87,15 @@ export class AuthController {
         return res.status(401).json({ error: error.message });
       }
 
-      console.log(user);
-
       const isPasswordCorrect = await checkPassword(password, user.password);
       if (!isPasswordCorrect) {
         const error = new Error("Credenciales inválidas");
         return res.status(401).json({ error: error.message });
       }
 
-      return res.json({ message: "Usuario autenticado" });
+      const token = generateJWT({ id: user.id });
+
+      return res.json({message: "Iniciando sesión...", token});
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }

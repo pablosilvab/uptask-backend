@@ -9,9 +9,5 @@ export const checkPassword = async (
   enteredPassword: string,
   storedHash: string
 ) => {
-  console.log(enteredPassword);
-  console.log(storedHash);
-  
-  
   return await bcrypt.compare(enteredPassword, storedHash);
 };

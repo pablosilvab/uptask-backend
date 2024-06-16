@@ -12,3 +12,4 @@ For local development, use a `.env` file and add the following variables:
 * SMTP_PORT
 * SMTP_USER
 * SMTP_PASS
+* JWT_SECRET
