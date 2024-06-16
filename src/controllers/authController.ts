@@ -63,7 +63,7 @@ export class AuthController {
     try {
       const { email, password } = req.body;
       const user = await User.findOne({ email });
-      
+
       if (!user) {
         const error = new Error("Email no registrado.");
         return res.status(404).json({ error: error.message });
@@ -95,7 +95,7 @@ export class AuthController {
 
       const token = generateJWT({ id: user.id });
 
-      return res.json({message: "Iniciando sesión...", token});
+      return res.json({ message: "Iniciando sesión...", token });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
@@ -201,5 +201,9 @@ export class AuthController {
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
+  };
+
+  static user = async (req: Request, res: Response) => {
+    return res.json(req.user);
   };
 }
