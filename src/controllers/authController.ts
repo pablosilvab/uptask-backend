@@ -238,7 +238,7 @@ export class AuthController {
 
       if (!isPasswordCorrect) {
         const error = new Error("La contraseña actual es incorrecta");
-        res.status(401).json({ error: error.message });
+        return res.status(401).json({ error: error.message });
       }
 
       user.password = await hashPassword(password);
