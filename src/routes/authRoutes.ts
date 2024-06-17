@@ -74,4 +74,35 @@ router.post(
 
 router.get("/user", authenticate, AuthController.user);
 
+/** Profile */
+router.put(
+  "/profile",
+  authenticate,
+  body("name").notEmpty().withMessage("El nombre no puede ser vacío"),
+  body("email").isEmail().withMessage("Email no válido"),
+  handleInputErrors,
+  AuthController.updateProfile
+);
+
+router.post(
+  "/update-password",
+  authenticate,
+  body("current_password")
+    .notEmpty()
+    .withMessage("El password actual no puede ser vacío"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("El password debe tener minimo 6 caracteres"),
+  body("password_confirmation")
+    .notEmpty()
+    .withMessage("La confirmación de tu password no puede ser vacío")
+    .custom((value, { req }) => {
+      if (value !== req.body.password)
+        throw new Error("Las contraseñas deben coincidir");
+      return true;
+    }),
+  handleInputErrors,
+  AuthController.updateCurrentUserPassword
+);
+
 export default router;
