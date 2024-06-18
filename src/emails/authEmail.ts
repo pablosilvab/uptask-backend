@@ -26,7 +26,7 @@ export class AuthEmail {
     };
     const htmlToSend = template(replacements);
 
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.FLAG_MAIL === "prod") {
       await resend.emails.send({
         from: "UpTask <onboarding@resend.dev>",
         to: [user.email],
@@ -58,7 +58,7 @@ export class AuthEmail {
     };
     const htmlToSend = template(replacements);
 
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.FLAG_MAIL === "prod") {
       await resend.emails.send({
         from: "UpTask <onboarding@resend.dev>",
         to: [user.email],
