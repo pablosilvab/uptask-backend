@@ -1,8 +1,7 @@
-import { transporter } from "../config/nodemailer";
-import handlebars from "handlebars";
 import fs from "fs";
+import handlebars from "handlebars";
 import path from "path";
-import { Resend } from "resend";
+import { transporter } from "../config/nodemailer";
 
 interface IEmail {
   email: string;
@@ -10,7 +9,6 @@ interface IEmail {
   token: string;
 }
 
-const resend = new Resend(process.env.RESEND_KEY);
 
 export class AuthEmail {
   static sendConfirmationEmail = async (user: IEmail) => {
@@ -26,23 +24,14 @@ export class AuthEmail {
     };
     const htmlToSend = template(replacements);
 
-    if (process.env.FLAG_MAIL === "prod") {
-      await resend.emails.send({
-        from: "UpTask <onboarding@resend.dev>",
-        to: [user.email],
-        subject: "UpTask - Confirmar cuenta",
-        html: htmlToSend,
-      });
-    } else {
-      const info = await transporter.sendMail({
-        from: "UpTask <admin@uptask.com>",
-        to: user.email,
-        subject: "UpTask - Confirmar cuenta",
-        text: "UpTask - Confirma tu cuenta",
-        html: htmlToSend,
-      });
-      console.log("Mensaje enviado", info.messageId);
-    }
+    const info = await transporter.sendMail({
+      from: "UpTask <admin@uptask.com>",
+      to: user.email,
+      subject: "UpTask - Confirmar cuenta",
+      text: "UpTask - Confirma tu cuenta",
+      html: htmlToSend,
+    });
+    console.log("Email sent", info.messageId);
   };
 
   static sendPasswordResetToken = async (user: IEmail) => {
@@ -58,23 +47,14 @@ export class AuthEmail {
     };
     const htmlToSend = template(replacements);
 
-    if (process.env.FLAG_MAIL === "prod") {
-      await resend.emails.send({
-        from: "UpTask <onboarding@resend.dev>",
-        to: [user.email],
-        subject: "UpTask - Restablecer contraseña",
-        html: htmlToSend,
-      });
-    } else {
-      const info = await transporter.sendMail({
-        from: "UpTask <admin@uptask.com>",
-        to: user.email,
-        subject: "UpTask - Restablecer contraseña",
-        text: "UpTask - Restablecer contraseña",
-        html: htmlToSend,
-      });
+    const info = await transporter.sendMail({
+      from: "UpTask <admin@uptask.com>",
+      to: user.email,
+      subject: "UpTask - Restablecer contraseña",
+      text: "UpTask - Restablecer contraseña",
+      html: htmlToSend,
+    });
 
-      console.log("Mensaje enviado", info.messageId);
-    }
+    console.log("Email sent", info.messageId);
   };
 }
