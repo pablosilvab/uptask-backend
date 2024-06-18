@@ -2,14 +2,11 @@ import { CorsOptions } from "cors";
 
 export const corsConfig: CorsOptions = {
   origin: function (origin, callback) {
-    if (!origin) {
-      return callback(null, true);
-    }
-    const whiteList = [process.env.FRONTEND_URL];
-    if (whiteList.includes(origin)) {
+    const allowedOrigins = process.env.ALLOWED_ORIGINS.split(" ");
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS error"));
+      callback(new Error("CORS error: Request from unauthorized origin"));
     }
   },
 };
