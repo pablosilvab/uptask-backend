@@ -2,12 +2,15 @@ import { transporter } from "../config/nodemailer";
 import handlebars from "handlebars";
 import fs from "fs";
 import path from "path";
+import { Resend } from "resend";
 
 interface IEmail {
   email: string;
   name: string;
   token: string;
 }
+
+const resend = new Resend(process.env.RESEND_KEY);
 
 export class AuthEmail {
   static sendConfirmationEmail = async (user: IEmail) => {
@@ -19,19 +22,27 @@ export class AuthEmail {
     const replacements = {
       name: user.name,
       token: user.token,
-      confirmation_link: process.env.FRONTEND_URL+"/auth/confirm-account"
+      confirmation_link: process.env.FRONTEND_URL + "/auth/confirm-account",
     };
     const htmlToSend = template(replacements);
 
-    const info = await transporter.sendMail({
-      from: "UpTask <admin@uptask.com>",
-      to: user.email,
-      subject: "UpTask - Confirmar cuenta",
-      text: "UpTask - Confirma tu cuenta",
-      html: htmlToSend,
-    });
-
-    console.log("Mensaje enviado", info.messageId);
+    if (process.env.NODE_ENV === "production") {
+      await resend.emails.send({
+        from: "UpTask <onboarding@resend.dev>",
+        to: [user.email],
+        subject: "UpTask - Confirmar cuenta",
+        html: htmlToSend,
+      });
+    } else {
+      const info = await transporter.sendMail({
+        from: "UpTask <admin@uptask.com>",
+        to: user.email,
+        subject: "UpTask - Confirmar cuenta",
+        text: "UpTask - Confirma tu cuenta",
+        html: htmlToSend,
+      });
+      console.log("Mensaje enviado", info.messageId);
+    }
   };
 
   static sendPasswordResetToken = async (user: IEmail) => {
@@ -43,18 +54,27 @@ export class AuthEmail {
     const replacements = {
       name: user.name,
       token: user.token,
-      confirmation_link: process.env.FRONTEND_URL+"/auth/new-password"
+      confirmation_link: process.env.FRONTEND_URL + "/auth/new-password",
     };
     const htmlToSend = template(replacements);
 
-    const info = await transporter.sendMail({
-      from: "UpTask <admin@uptask.com>",
-      to: user.email,
-      subject: "UpTask - Restablecer contraseña",
-      text: "UpTask - Restablecer contraseña",
-      html: htmlToSend,
-    });
+    if (process.env.NODE_ENV === "production") {
+      await resend.emails.send({
+        from: "UpTask <onboarding@resend.dev>",
+        to: [user.email],
+        subject: "UpTask - Restablecer contraseña",
+        html: htmlToSend,
+      });
+    } else {
+      const info = await transporter.sendMail({
+        from: "UpTask <admin@uptask.com>",
+        to: user.email,
+        subject: "UpTask - Restablecer contraseña",
+        text: "UpTask - Restablecer contraseña",
+        html: htmlToSend,
+      });
 
-    console.log("Mensaje enviado", info.messageId);
+      console.log("Mensaje enviado", info.messageId);
+    }
   };
 }
