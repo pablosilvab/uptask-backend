@@ -116,6 +116,26 @@ export class AuthController {
         return res.status(403).json({ error: error.message });
       }
 
+      if (!user.confirmed) {
+        const token = await Token.findOne({ user: user });
+
+        if (token) {
+          token.deleteOne();
+
+          AuthEmail.sendConfirmationEmail({
+            email: user.email,
+            name: user.name,
+            token: generateToken(),
+          });
+        }
+
+        const error = new Error(
+          "Debes confirmar tu cuenta. Sigue las instrucciones enviadas a tu email."
+        );
+
+        return res.status(409).json({ error: error.message });
+      }
+
       const token = new Token();
       token.token = generateToken();
       token.user = user.id;

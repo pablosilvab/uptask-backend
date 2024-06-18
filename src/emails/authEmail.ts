@@ -9,52 +9,53 @@ interface IEmail {
   token: string;
 }
 
+const FROM = "UpTask <admin@uptask.com>";
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 export class AuthEmail {
-  static sendConfirmationEmail = async (user: IEmail) => {
+  static sendEmail = async (
+    user: IEmail,
+    templateName: string,
+    urlPath: string,
+    subject: string
+  ) => {
     const __dirname = path.resolve();
-    const filePath = path.join(__dirname, "./public/confirm-account.html");
+    const filePath = path.join(__dirname, `./public/${templateName}.html`);
     const source = fs.readFileSync(filePath, "utf-8").toString();
     const template = handlebars.compile(source);
 
     const replacements = {
       name: user.name,
       token: user.token,
-      confirmation_link: process.env.FRONTEND_URL + "/auth/confirm-account",
+      confirmation_link: `${FRONTEND_URL}${urlPath}`,
     };
     const htmlToSend = template(replacements);
 
     const info = await transporter.sendMail({
-      from: "UpTask <admin@uptask.com>",
+      from: FROM,
       to: user.email,
-      subject: "UpTask - Confirmar cuenta",
-      text: "UpTask - Confirma tu cuenta",
+      subject: subject,
+      text: subject,
       html: htmlToSend,
     });
     console.log("Email sent", info.messageId);
   };
 
+  static sendConfirmationEmail = async (user: IEmail) => {
+    await AuthEmail.sendEmail(
+      user,
+      "confirm-account",
+      "/auth/confirm-account",
+      "UpTask - Confirmar cuenta"
+    );
+  };
+
   static sendPasswordResetToken = async (user: IEmail) => {
-    const __dirname = path.resolve();
-    const filePath = path.join(__dirname, "./public/forgot-password.html");
-    const source = fs.readFileSync(filePath, "utf-8").toString();
-    const template = handlebars.compile(source);
-
-    const replacements = {
-      name: user.name,
-      token: user.token,
-      confirmation_link: process.env.FRONTEND_URL + "/auth/new-password",
-    };
-    const htmlToSend = template(replacements);
-
-    const info = await transporter.sendMail({
-      from: "UpTask <admin@uptask.com>",
-      to: user.email,
-      subject: "UpTask - Restablecer contraseña",
-      text: "UpTask - Restablecer contraseña",
-      html: htmlToSend,
-    });
-
-    console.log("Email sent", info.messageId);
+    await AuthEmail.sendEmail(
+      user,
+      "forgot-password",
+      "/auth/new-password",
+      "UpTask - Restablecer contraseña"
+    );
   };
 }
