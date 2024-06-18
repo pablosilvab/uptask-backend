@@ -2,7 +2,7 @@ import { CorsOptions } from "cors";
 
 export const corsConfig: CorsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [process.env.FRONTEND_URL];
+    const allowedOrigins = process.env.ALLOWED_ORIGINS.split(" ");
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
