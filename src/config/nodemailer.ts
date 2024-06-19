@@ -5,11 +5,13 @@ dotenv.config();
 
 const config = () => {
   return {
-    host: process.env.SMTP_HOST,
-    port: +process.env.SMTP_PORT,
+    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: process.env.SMTP_USERNAME,
+      pass: process.env.SMTP_APP_PASSWORD,
     },
   };
 };

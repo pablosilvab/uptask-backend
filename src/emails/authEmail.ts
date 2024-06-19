@@ -9,7 +9,6 @@ interface IEmail {
   token: string;
 }
 
-const FROM = "UpTask <admin@uptask.com>";
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 export class AuthEmail {
@@ -32,7 +31,7 @@ export class AuthEmail {
     const htmlToSend = template(replacements);
 
     const info = await transporter.sendMail({
-      from: FROM,
+      from: "UpTask <uptask27@gmail.com>",
       to: user.email,
       subject: subject,
       text: subject,
