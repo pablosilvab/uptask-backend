@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import User from "../models/user";
 import Project from "../models/project";
+import User from "../models/user";
 
 export class TeamController {
   static findMemberByEmail = async (req: Request, res: Response) => {
@@ -43,7 +43,7 @@ export class TeamController {
   };
 
   static removeMemberById = async (req: Request, res: Response) => {
-    const {userId } = req.params;
+    const { userId } = req.params;
     try {
       if (!req.project.team.some((team) => team.toString() === userId)) {
         const error = new Error("El usuario no existe en el proyecto");
@@ -64,7 +64,7 @@ export class TeamController {
     try {
       const project = await Project.findById(req.project.id).populate({
         path: "team",
-        select: "id email name",
+        select: "id email name status",
       });
       res.json(project.team);
     } catch (error) {

@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/authController";
 import { body, param } from "express-validator";
-import { handleInputErrors } from "../middleware/validation";
+import { AuthController } from "../controllers/authController";
+import { InvitationController } from "../controllers/invitationController";
 import { authenticate } from "../middleware/auth";
+import { handleInputErrors } from "../middleware/validation";
 const router = Router();
 
 router.post(
@@ -111,6 +112,12 @@ router.post(
   body("password").notEmpty().withMessage("El password no puede ser vacío"),
   handleInputErrors,
   AuthController.checkPassword
+);
+
+router.post(
+  "/team/confirm",
+  handleInputErrors,
+  InvitationController.completeAccount
 );
 
 export default router;

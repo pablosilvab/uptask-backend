@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { ProjectController } from "../controllers/projectController";
 import { body, param } from "express-validator";
-import { handleInputErrors } from "../middleware/validation";
+import { InvitationController } from "../controllers/invitationController";
+import { NoteController } from "../controllers/noteController";
+import { ProjectController } from "../controllers/projectController";
 import { TaskController } from "../controllers/taskController";
+import { TeamController } from "../controllers/teamController";
+import { authenticate } from "../middleware/auth";
 import { validateProjectExists } from "../middleware/project";
 import { hasAuthorization, validateTaskExists } from "../middleware/task";
-import { authenticate } from "../middleware/auth";
-import { TeamController } from "../controllers/teamController";
-import { NoteController } from "../controllers/noteController";
+import { handleInputErrors } from "../middleware/validation";
 
 const router = Router();
 router.use(authenticate);
@@ -164,6 +165,12 @@ router.delete(
   validateTaskExists,
   handleInputErrors,
   NoteController.removeNote
+);
+
+router.post(
+  "/:projectId/team/invite",
+  handleInputErrors,
+  InvitationController.inviteMemberToProject
 );
 
 export default router;

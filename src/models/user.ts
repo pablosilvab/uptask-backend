@@ -1,10 +1,18 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export const userStatus = {
+  CONFIRMED: "confirmed",
+  NOT_CONFIRMED: "pending",
+  INVITED: "invited",
+} as const;
+
+export type UserStatus = (typeof userStatus)[keyof typeof userStatus];
+
 export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  confirmed: boolean;
+  status: UserStatus;
 }
 
 const userSchema: Schema = new Schema({
@@ -22,9 +30,10 @@ const userSchema: Schema = new Schema({
     type: String,
     required: true,
   },
-  confirmed: {
-    type: Boolean,
-    default: false,
+  status: {
+    type: String,
+    enum: Object.values(userStatus),
+    default: userStatus.NOT_CONFIRMED,
   },
 });
 

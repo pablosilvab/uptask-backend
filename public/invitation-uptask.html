@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Te han invitado a unirte a UpTask!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333333;
+      }
+      p {
+        color: #666666;
+      }
+      a {
+        color: #1a73e8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .token {
+        display: inline-block;
+        background-color: #eaf4ff;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        color: #1a73e8;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hola,</h1>
+      <p>
+        {{name_sender}} te ha invitado a unirte a UpTask para gestionar las
+        tareas del proyecto <strong>{{project_name}}</strong>.
+      </p>
+      <p>
+        UpTask es una aplicación que te permitirá organizar y gestionar tus
+        tareas de manera eficiente, colaborando con {{name_sender}} y el equipo
+        de trabajo.
+      </p>
+      <p>
+        Para aceptar la invitación y comenzar a trabajar en el proyecto, por
+        favor haz clic en el siguiente enlace e ingresa el código
+        <span class="token">{{token}}</span> para confirmar tu cuenta.
+      </p>
+
+      <p style="text-align: center">
+        <a
+          href="{{confirmation_link}}"
+          style="
+            background-color: #1a73e8;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+          "
+          >Unirme a UpTask</a
+        >
+      </p>
+      <p>
+        Si tienes alguna pregunta o necesitas ayuda, no dudes en ponerte en
+        contacto con nosotros.
+      </p>
+      <p>¡Esperamos verte pronto en UpTask!</p>
+      <div class="footer">
+        <p>
+          Este es un correo automático, por favor no respondas a este mensaje.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

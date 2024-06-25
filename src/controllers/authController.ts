@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user";
+import User, { userStatus } from "../models/user";
 import { checkPassword, hashPassword } from "../utils/auth";
 import { generateToken } from "../utils/token";
 import Token from "../models/token";
@@ -50,10 +50,10 @@ export class AuthController {
       }
 
       const user = await User.findById(tokenExists.user);
-      user.confirmed = true;
+      user.status = userStatus.CONFIRMED;
 
-      Promise.allSettled([user.save(), tokenExists.deleteOne()]);
-      res.json({ message: "Tu cuenta ha sido confirmada exitosamente" });
+      //Promise.allSettled([user.save(), tokenExists.deleteOne()]);
+      res.json({ message: "Tu cuenta ha sido confirmada exitosamente", user });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
@@ -69,7 +69,7 @@ export class AuthController {
         return res.status(404).json({ error: error.message });
       }
 
-      if (!user.confirmed) {
+      if (user.status !== userStatus.CONFIRMED) {
         const token = new Token();
         token.user = user.id;
         token.token = generateToken();
@@ -111,15 +111,30 @@ export class AuthController {
         return res.status(404).json({ error: error.message });
       }
 
-      if (user.confirmed) {
+      if (user.status === userStatus.CONFIRMED) {
         const error = new Error("El usuario ya está confirmado");
         return res.status(403).json({ error: error.message });
       }
 
-      if (!user.confirmed) {
+      if (user.status === userStatus.NOT_CONFIRMED) {
         const token = await Token.findOne({ user: user });
 
-        if (token) {
+        if (!token) {
+          const token = new Token();
+          token.token = generateToken();
+          token.user = user.id;
+
+          AuthEmail.sendConfirmationEmail({
+            email: user.email,
+            name: user.name,
+            token: token.token,
+          });
+
+          await Promise.allSettled([user.save(), token.save()]);
+          return res.status(200).json({
+            message: "Se ha enviado un nuevo código a tu email.",
+          });
+        } else {
           token.deleteOne();
 
           AuthEmail.sendConfirmationEmail({
@@ -135,21 +150,6 @@ export class AuthController {
 
         return res.status(409).json({ error: error.message });
       }
-
-      const token = new Token();
-      token.token = generateToken();
-      token.user = user.id;
-
-      AuthEmail.sendConfirmationEmail({
-        email: user.email,
-        name: user.name,
-        token: token.token,
-      });
-
-      await Promise.allSettled([user.save(), token.save()]);
-      res.status(200).json({
-        message: "Se ha enviado un nuevo código a tu email.",
-      });
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
@@ -165,20 +165,40 @@ export class AuthController {
         return res.status(404).json({ error: error.message });
       }
 
-      const token = new Token();
-      token.token = generateToken();
-      token.user = user.id;
-      await token.save();
+      if (user.status === userStatus.NOT_CONFIRMED) {
+        const token = await Token.findOne({ user: user });
 
-      AuthEmail.sendPasswordResetToken({
-        email: user.email,
-        name: user.name,
-        token: token.token,
-      });
+        if (!token) {
+          const token = new Token();
+          token.token = generateToken();
+          token.user = user.id;
+          await token.save();
 
-      res.status(200).json({
-        message: "Revisa tu email y sigue las instrucciones.",
-      });
+          AuthEmail.sendPasswordResetToken({
+            email: user.email,
+            name: user.name,
+            token: token.token,
+          });
+
+          return res.status(200).json({
+            message: "Revisa tu email y sigue las instrucciones.",
+          });
+        } else {
+          token.deleteOne();
+
+          AuthEmail.sendConfirmationEmail({
+            email: user.email,
+            name: user.name,
+            token: generateToken(),
+          });
+        }
+
+        const error = new Error(
+          "Debes confirmar tu cuenta. Sigue las instrucciones enviadas a tu email."
+        );
+
+        return res.status(409).json({ error: error.message });
+      }
     } catch (error) {
       res.status(500).json({ error: "Error interno. Intente más tarde" });
     }
